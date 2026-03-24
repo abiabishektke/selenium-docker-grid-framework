@@ -3,28 +3,38 @@
     <configuration>
 
         <!-- Theme -->
-        <theme>dark</theme>
+        <theme>DARK</theme>
 
-        <!-- Report Info -->
+        <!-- Report Details -->
         <documentTitle>Automation Execution Report</documentTitle>
-        <reportName>BDD Cucumber Test Report</reportName>
+        <reportName>Selenium Hybrid Framework Report</reportName>
+
+        <!-- Time Format -->
+        <timeStampFormat>EEEE, MMMM dd, yyyy, hh:mm a</timeStampFormat>
 
         <!-- Encoding -->
         <encoding>UTF-8</encoding>
 
-        <!-- Timeline -->
-        <enableTimeline>true</enableTimeline>
+        <!-- Protocol -->
+        <protocol>https</protocol>
 
-        <!-- Custom CSS (Optional Styling) -->
+        <!-- Timeline -->
+        <timelineEnabled>true</timelineEnabled>
+
+        <!-- Custom CSS (Optional) -->
         <css>
-            .badge-primary {
-                background-color: #1E90FF;
-            }
+            <![CDATA[
+                .nav-logo {
+                    width: 200px;
+                }
+            ]]>
         </css>
 
         <!-- Custom JS (Optional) -->
         <js>
-            console.log("Execution Completed Successfully");
+            <![CDATA[
+                console.log('Extent Report Loaded Successfully');
+            ]]>
         </js>
 
     </configuration>
