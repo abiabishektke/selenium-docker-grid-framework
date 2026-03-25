@@ -54,6 +54,7 @@ public class BrowserUtil {
                 ChromeOptions options = new ChromeOptions();
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--no-sandbox");
+                options.addArguments("--window-size=1920,1080");
 
                 driver = new RemoteWebDriver(new URL(gridUrl), options);
 
@@ -71,7 +72,8 @@ public class BrowserUtil {
 
         driver.manage().window().maximize();
         driver.get(url);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(12));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
 
         return driver;
     }
