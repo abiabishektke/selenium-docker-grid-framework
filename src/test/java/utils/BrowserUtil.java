@@ -70,7 +70,7 @@ public class BrowserUtil {
             }
         }
 
-        driver.manage().window().maximize();
+        //driver.manage().window().maximize();
         driver.get(url);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
