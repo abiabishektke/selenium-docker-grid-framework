@@ -18,64 +18,104 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 public class BrowserUtil {
 
-    WebDriver driver;
-    Properties prop;
+    private WebDriver driver;
+    private Properties prop;
 
-    public WebDriver openBrowser() throws Exception {
+    public WebDriver openBrowser() {
 
-        prop = new Properties();
-        FileInputStream fis =
-                new FileInputStream("src/test/java/config/config.properties");
-        prop.load(fis);
+        try {
+            // 🔹 Load config
+            prop = new Properties();
+            FileInputStream fis = new FileInputStream("src/test/java/config/config.properties");
+            prop.load(fis);
 
-        String browser = prop.getProperty("browser");
-        String url = prop.getProperty("url");
-        String execution = prop.getProperty("execution");
-        String gridUrl = prop.getProperty("gridUrl");
+            String browser = prop.getProperty("browser").trim();
+            String url = prop.getProperty("url").trim();
+            String execution = prop.getProperty("execution").trim();
+            String gridUrl = prop.getProperty("gridUrl").trim();
 
-        // 🔥 LOCAL EXECUTION
-        if (execution.equalsIgnoreCase("local")) {
+            System.out.println("Execution: " + execution);
+            System.out.println("Browser: " + browser);
+            System.out.println("Grid URL: " + gridUrl);
 
-            if (browser.equalsIgnoreCase("chrome")) {
-                driver = new ChromeDriver();
+            // =========================
+            // 🔥 LOCAL EXECUTION
+            // =========================
+            if (execution.equalsIgnoreCase("local")) {
 
-            } else if (browser.equalsIgnoreCase("firefox")) {
-                driver = new FirefoxDriver();
+                switch (browser.toLowerCase()) {
+                    case "chrome":
+                        driver = new ChromeDriver();
+                        break;
 
-            } else if (browser.equalsIgnoreCase("edge")) {
-                driver = new EdgeDriver();
+                    case "firefox":
+                        driver = new FirefoxDriver();
+                        break;
+
+                    case "edge":
+                        driver = new EdgeDriver();
+                        break;
+
+                    default:
+                        throw new RuntimeException("Invalid browser: " + browser);
+                }
             }
-        }
 
-        // 🔥 REMOTE EXECUTION (DOCKER GRID)
-        else if (execution.equalsIgnoreCase("remote")) {
+            // =========================
+            // 🔥 REMOTE EXECUTION (GRID)
+            // =========================
+            else if (execution.equalsIgnoreCase("remote")) {
 
-            if (browser.equalsIgnoreCase("chrome")) {
-                ChromeOptions options = new ChromeOptions();
-                options.addArguments("--disable-dev-shm-usage");
-                options.addArguments("--no-sandbox");
-                options.addArguments("--window-size=1920,1080");
+                URL grid = new URL(gridUrl);
 
-                driver = new RemoteWebDriver(new URL(gridUrl), options);
+                switch (browser.toLowerCase()) {
+                    case "chrome":
+                        ChromeOptions chromeOptions = new ChromeOptions();
+                        chromeOptions.addArguments("--disable-dev-shm-usage");
+                        chromeOptions.addArguments("--no-sandbox");
+                        chromeOptions.addArguments("--window-size=1920,1080");
 
-            } else if (browser.equalsIgnoreCase("firefox")) {
-                FirefoxOptions options = new FirefoxOptions();
+                        driver = new RemoteWebDriver(grid, chromeOptions);
+                        break;
 
-                driver = new RemoteWebDriver(new URL(gridUrl), options);
+                    case "firefox":
+                        FirefoxOptions firefoxOptions = new FirefoxOptions();
+                        driver = new RemoteWebDriver(grid, firefoxOptions);
+                        break;
 
-            } else if (browser.equalsIgnoreCase("edge")) {
-                EdgeOptions options = new EdgeOptions();
+                    case "edge":
+                        EdgeOptions edgeOptions = new EdgeOptions();
+                        driver = new RemoteWebDriver(grid, edgeOptions);
+                        break;
 
-                driver = new RemoteWebDriver(new URL(gridUrl), options);
+                    default:
+                        throw new RuntimeException("Invalid browser for remote: " + browser);
+                }
             }
+
+            else {
+                throw new RuntimeException("Invalid execution type: " + execution);
+            }
+
+            // 🔴 CRITICAL SAFETY CHECK
+            if (driver == null) {
+                throw new RuntimeException("Driver initialization FAILED");
+            }
+
+            // =========================
+            // 🔥 COMMON SETUP
+            // =========================
+            driver.manage().window().maximize();
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+            driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+
+            driver.get(url);
+
+            return driver;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error while launching browser", e);
         }
-
-        //driver.manage().window().maximize();
-        driver.get(url);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
-
-        return driver;
     }
 
     public void closeBrowser() {
@@ -84,7 +124,7 @@ public class BrowserUtil {
         }
     }
 
-    // ✅ FIX: Add this method
+    // ✅ Scroll Utility
     public static void scrollToElement(WebDriver driver, WebElement element) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
