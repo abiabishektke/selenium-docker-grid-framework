@@ -16,11 +16,21 @@ import utils.BrowserUtil;
 public class Hooks {
 
     private static WebDriver driver;
+    private BrowserUtil browser;
 
     @Before
-    public void setUp() throws Exception {
-        BrowserUtil browser = new BrowserUtil();
-        driver = browser.openBrowser();
+    public void setUp() {
+        try {
+            browser = new BrowserUtil();
+            driver = browser.openBrowser();
+
+            if (driver == null) {
+                throw new RuntimeException("Driver is NULL after initialization");
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Browser setup failed", e);
+        }
     }
 
     public static WebDriver getDriver() {
@@ -32,20 +42,14 @@ public class Hooks {
 
         if (scenario.isFailed() && driver != null) {
 
-            // Clean file name (VERY IMPORTANT)
             String fileName = scenario.getName().replaceAll("[^a-zA-Z0-9]", "_");
-
-            // Folder path
             String screenshotPath = "ExtentReports/Screenshots/";
 
-            // Create folder if not exists
             new File(screenshotPath).mkdirs();
 
-            // FINAL LINE (Your Style)
             Shutterbug.shootPage(driver, FULL_SCROLL)
                       .save(screenshotPath + fileName + ".png");
 
-            // OPTIONAL (Attach to Cucumber report)
             try {
                 byte[] screenshot = Shutterbug.shootPage(driver).getBytes();
                 scenario.attach(screenshot, "image/png", fileName);
@@ -54,6 +58,7 @@ public class Hooks {
             }
         }
 
+        // 🔴 ALWAYS CLOSE DRIVER SAFELY
         if (driver != null) {
             driver.quit();
         }
